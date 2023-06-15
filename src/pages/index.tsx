@@ -1,3 +1,4 @@
+import { dateFormater } from "@/utils/dateFormater";
 import Head from "next/head";
 import { useRouter } from "next/router";
 
@@ -7,14 +8,31 @@ import { useRouter } from "next/router";
   @param {Date} clientTime - The client time.
   @returns {string} The time difference in the format "{days} days, {hours} hours, {minutes} minutes, {seconds} seconds".
 */
-const calculateTimeDifference = (server: Date, client: Date) => {};
 
+export const getServerSideProps = async (context: any) => {
+  const date = new Date();
+  return {
+    props: {
+      serverTimeMilliseconds: date.getTime(),
+    },
+  };
+};
 
-export default function Home() {
+const calculateTimeDifference = (server: Date, client: Date): Date => {
+  const differenceMs: number = client.getTime() - server.getTime();
+  return new Date(server.getTime() + differenceMs);
+};
+
+export default function Home({serverTimeMilliseconds}: {serverTimeMilliseconds:number}) {
+  const serverTime: Date = new Date(serverTimeMilliseconds)
+  const clientTime: Date = new Date();
+  const diffTime: Date = calculateTimeDifference(serverTime, clientTime);
+
   const router = useRouter();
   const moveToTaskManager = () => {
     router.push("/tasks");
   }
+
   return (
     <>
       <Head>
@@ -29,13 +47,13 @@ export default function Home() {
           {/* Display here the server time (DD-MM-AAAA HH:mm)*/}
           <p>
             Server time:{" "}
-            <span className="serverTime">{/* Replace with the value */}</span>
+            <span className="serverTime">{dateFormater(serverTime.toString())}</span>
           </p>
 
           {/* Display here the time difference between the server side and the client side */}
           <p>
             Time diff:{" "}
-            <span className="serverTime">{/* Replace with the value */}</span>
+            <span className="serverTime">{dateFormater(diffTime.toString())}</span>
           </p>
         </div>
 
